@@ -8,7 +8,9 @@ from inbox_sentinel.gmail.client import fetch_unread_emails
 from inbox_sentinel.memory.sqlite_store import (
     init_db,
     is_email_processed,
+    reminder_exists_for_email,
     save_processed_email,
+    save_reminder,
 )
 from inbox_sentinel.notifications.notifier import notify_email
 from inbox_sentinel.reminders.reminder_agent import create_reminder
@@ -101,8 +103,10 @@ def process_inbox():
 
         reminder = create_reminder(email)
 
-        if reminder:
-            print("   Reminder:")
+        if reminder and not reminder_exists_for_email(email["id"]):
+            save_reminder(reminder)
+
+            print("   Reminder Created:")
             print(f"   - Remind At: {reminder['remind_at']}")
             print(f"   - Status: {reminder['status']}")
 
