@@ -2,8 +2,8 @@ from datetime import datetime, timedelta, timezone
 
 
 PRIORITY_REMINDER_DELAYS = {
-    "HIGH": timedelta(minutes=30),
-    "MEDIUM": timedelta(hours=4),
+    "HIGH": timedelta(minutes=1),
+    "MEDIUM": timedelta(minutes=2),
     "LOW": None,
 }
 

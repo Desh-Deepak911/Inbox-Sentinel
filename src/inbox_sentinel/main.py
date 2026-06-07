@@ -4,7 +4,11 @@ from inbox_sentinel.ai.email_classifier import classify_email_with_ai
 from inbox_sentinel.classifiers.rule_classifier import classify_email
 from inbox_sentinel.config.loader import load_config
 from inbox_sentinel.digest.generator import generate_digest
-from inbox_sentinel.gmail.client import fetch_unread_emails
+from inbox_sentinel.gmail.client import fetch_unread_emails, create_gmail_draft
+from inbox_sentinel.replies.reply_agent import (
+    create_reply_draft_request,
+    generate_reply_body,
+)
 from inbox_sentinel.memory.sqlite_store import (
     get_due_reminders,
     init_db,
@@ -114,6 +118,15 @@ def process_inbox():
             print("   Reminder Created:")
             print(f"   - Remind At: {reminder['remind_at']}")
             print(f"   - Status: {reminder['status']}")
+
+        reply_draft_request = create_reply_draft_request(email)
+
+        if reply_draft_request:
+            reply_body = generate_reply_body(email)
+            create_gmail_draft(reply_draft_request["sender"], reply_draft_request["subject"], reply_body, reply_draft_request["thread_id"])
+
+            print("   Reply Draft Created:")
+            print(f"   - Status: {reply_draft_request['status']}")
 
         save_processed_email(email)
 
