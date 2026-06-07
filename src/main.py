@@ -1,6 +1,10 @@
 from db import init_db, is_email_processed, save_processed_email
 from gmail_client import fetch_unread_emails
+from notifier import notify_email
 from rules import classify_email
+
+
+NOTIFIABLE_PRIORITIES = {"HIGH", "MEDIUM"}
 
 
 def main():
@@ -41,6 +45,9 @@ def main():
             print("   Reasons:")
             for reason in email["reasons"]:
                 print(f"   - {reason}")
+
+        if email["priority"] in NOTIFIABLE_PRIORITIES:
+            notify_email(email)
 
         save_processed_email(email)
 
