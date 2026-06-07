@@ -1,13 +1,16 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from config import load_config
-from db import init_db, is_email_processed, save_processed_email
-from digest import generate_digest
-from gmail_client import fetch_unread_emails
-from notifier import notify_email
-from rules import classify_email
-from ai_classifier import classify_email_with_ai
-
+from inbox_sentinel.ai.email_classifier import classify_email_with_ai
+from inbox_sentinel.classifiers.rule_classifier import classify_email
+from inbox_sentinel.config.loader import load_config
+from inbox_sentinel.digest.generator import generate_digest
+from inbox_sentinel.gmail.client import fetch_unread_emails
+from inbox_sentinel.memory.sqlite_store import (
+    init_db,
+    is_email_processed,
+    save_processed_email,
+)
+from inbox_sentinel.notifications.notifier import notify_email
 
 PRIORITY_ORDER = {
     "LOW": 1,
@@ -23,7 +26,6 @@ def should_use_ai(email, config):
     minimum_priority = config["ai"]["minimum_priority"]
 
     return PRIORITY_ORDER[email["priority"]] >= PRIORITY_ORDER[minimum_priority]
-
 
 def process_inbox():
     config = load_config()
@@ -119,7 +121,6 @@ def run_scheduler():
 
     process_inbox()
     scheduler.start()
-
 
 def main():
     config = load_config()

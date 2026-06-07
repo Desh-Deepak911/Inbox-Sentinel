@@ -2,7 +2,7 @@ from pathlib import Path
 import yaml
 
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parents[3]
 CONFIG_PATH = BASE_DIR / "config.yaml"
 EXAMPLE_CONFIG_PATH = BASE_DIR / "config.example.yaml"
 

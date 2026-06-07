@@ -8,7 +8,7 @@ from googleapiclient.discovery import build
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parents[3]
 CREDENTIALS_PATH = BASE_DIR / "credentials.json"
 TOKEN_PATH = BASE_DIR / "token.json"
 

@@ -1,5 +1,4 @@
-from db import get_recent_priority_emails
-
+from inbox_sentinel.memory.sqlite_store import get_recent_priority_emails
 
 def generate_digest(limit=20):
     emails = get_recent_priority_emails(limit)

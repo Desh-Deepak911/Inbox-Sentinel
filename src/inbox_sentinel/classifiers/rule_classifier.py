@@ -1,4 +1,4 @@
-from config import load_config
+from inbox_sentinel.config.loader import load_config
 
 
 def classify_email(email):
