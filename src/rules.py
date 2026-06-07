@@ -1,23 +1,12 @@
-URGENT_KEYWORDS = [
-    "urgent",
-    "asap",
-    "deadline",
-    "interview",
-    "offer",
-    "action required",
-    "follow up",
-    "final reminder",
-]
-
-IMPORTANT_SENDERS = [
-    "recruiter",
-    "careers",
-    "hr",
-    "hiring",
-]
+from config import load_config
 
 
 def classify_email(email):
+    config = load_config()
+
+    urgent_keywords = config["priority"]["urgent_keywords"]
+    important_senders = config["priority"]["important_senders"]
+
     score = 0
     reasons = []
 
@@ -27,13 +16,13 @@ def classify_email(email):
 
     text = f"{subject} {snippet}"
 
-    for keyword in URGENT_KEYWORDS:
-        if keyword in text:
+    for keyword in urgent_keywords:
+        if keyword.lower() in text:
             score += 3
             reasons.append(f'Contains keyword "{keyword}"')
 
-    for sender_keyword in IMPORTANT_SENDERS:
-        if sender_keyword in sender:
+    for sender_keyword in important_senders:
+        if sender_keyword.lower() in sender:
             score += 4
             reasons.append(f'Sender looks important: "{sender_keyword}"')
 

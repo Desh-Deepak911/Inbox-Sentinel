@@ -1,16 +1,20 @@
+from config import load_config
 from db import init_db, is_email_processed, save_processed_email
 from gmail_client import fetch_unread_emails
 from notifier import notify_email
 from rules import classify_email
 
 
-NOTIFIABLE_PRIORITIES = {"HIGH", "MEDIUM"}
-
-
 def main():
+    config = load_config()
+
+    max_results = config["gmail"]["max_results"]
+    notifications_enabled = config["notifications"]["enabled"]
+    notifiable_priorities = set(config["notifications"]["priorities"])
+
     init_db()
 
-    emails = fetch_unread_emails(max_results=10)
+    emails = fetch_unread_emails(max_results=max_results)
 
     if not emails:
         print("No unread emails found.")
@@ -46,7 +50,7 @@ def main():
             for reason in email["reasons"]:
                 print(f"   - {reason}")
 
-        if email["priority"] in NOTIFIABLE_PRIORITIES:
+        if notifications_enabled and email["priority"] in notifiable_priorities:
             notify_email(email)
 
         save_processed_email(email)
