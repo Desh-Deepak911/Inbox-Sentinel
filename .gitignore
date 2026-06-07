@@ -2,3 +2,4 @@ credentials.json
 token.json
 *.sqlite3
 config.yaml
+.env

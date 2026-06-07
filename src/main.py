@@ -1,8 +1,25 @@
+from ai_classifier import classify_email_with_ai
 from config import load_config
 from db import init_db, is_email_processed, save_processed_email
 from gmail_client import fetch_unread_emails
 from notifier import notify_email
 from rules import classify_email
+
+
+PRIORITY_ORDER = {
+    "LOW": 1,
+    "MEDIUM": 2,
+    "HIGH": 3,
+}
+
+
+def should_use_ai(email, config):
+    if not config["ai"]["enabled"]:
+        return False
+
+    minimum_priority = config["ai"]["minimum_priority"]
+
+    return PRIORITY_ORDER[email["priority"]] >= PRIORITY_ORDER[minimum_priority]
 
 
 def main():
@@ -11,6 +28,7 @@ def main():
     max_results = config["gmail"]["max_results"]
     notifications_enabled = config["notifications"]["enabled"]
     notifiable_priorities = set(config["notifications"]["priorities"])
+    ai_model = config["ai"]["model"]
 
     init_db()
 
@@ -29,10 +47,25 @@ def main():
         print("No new unread emails to process.")
         return
 
-    classified_emails = [classify_email(email) for email in new_emails]
+    classified_emails = []
+
+    for email in new_emails:
+        rule_result = classify_email(email)
+
+        if should_use_ai(rule_result, config):
+            ai_result = classify_email_with_ai(rule_result, model=ai_model)
+
+            rule_result["ai_priority"] = ai_result.get("priority", rule_result["priority"])
+            rule_result["ai_reason"] = ai_result.get("reason", "")
+            rule_result["suggested_action"] = ai_result.get("suggested_action", "")
+            rule_result["confidence"] = ai_result.get("confidence", 0.0)
+
+            rule_result["priority"] = rule_result["ai_priority"]
+
+        classified_emails.append(rule_result)
 
     classified_emails.sort(
-        key=lambda email: email["score"],
+        key=lambda email: PRIORITY_ORDER[email["priority"]],
         reverse=True,
     )
 
@@ -46,9 +79,14 @@ def main():
         print(f"   Snippet: {email['snippet']}")
 
         if email["reasons"]:
-            print("   Reasons:")
+            print("   Rule Reasons:")
             for reason in email["reasons"]:
                 print(f"   - {reason}")
+
+        if email.get("ai_reason"):
+            print(f"   AI Reason: {email['ai_reason']}")
+            print(f"   Suggested Action: {email['suggested_action']}")
+            print(f"   Confidence: {email['confidence']}")
 
         if notifications_enabled and email["priority"] in notifiable_priorities:
             notify_email(email)
