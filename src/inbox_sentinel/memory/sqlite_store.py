@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+from datetime import datetime, timezone
 
 
 BASE_DIR = Path(__file__).resolve().parents[3]
@@ -173,3 +174,37 @@ def reminder_exists_for_email(email_id):
         ).fetchone()
 
     return result is not None
+
+def get_due_reminders():
+    now = datetime.now(timezone.utc).isoformat()
+
+    with get_connection() as conn:
+        conn.row_factory = sqlite3.Row
+
+        rows = conn.execute(
+            """
+            SELECT *
+            FROM reminders
+            WHERE status = 'pending'
+              AND remind_at <= ?
+            ORDER BY remind_at ASC
+            """,
+            (now,),
+        ).fetchall()
+
+    return [dict(row) for row in rows]
+
+
+def mark_reminder_sent(reminder_id):
+    now = datetime.now(timezone.utc).isoformat()
+
+    with get_connection() as conn:
+        conn.execute(
+            """
+            UPDATE reminders
+            SET status = 'sent',
+                sent_at = ?
+            WHERE id = ?
+            """,
+            (now, reminder_id),
+        )

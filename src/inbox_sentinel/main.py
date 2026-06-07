@@ -6,13 +6,16 @@ from inbox_sentinel.config.loader import load_config
 from inbox_sentinel.digest.generator import generate_digest
 from inbox_sentinel.gmail.client import fetch_unread_emails
 from inbox_sentinel.memory.sqlite_store import (
+    get_due_reminders,
     init_db,
     is_email_processed,
+    mark_reminder_sent,
     reminder_exists_for_email,
     save_processed_email,
     save_reminder,
 )
-from inbox_sentinel.notifications.notifier import notify_email
+
+from inbox_sentinel.notifications.notifier import notify_email, notify_reminder
 from inbox_sentinel.reminders.reminder_agent import create_reminder
 
 PRIORITY_ORDER = {
@@ -44,6 +47,7 @@ def process_inbox():
 
     if not emails:
         print("No unread emails found.")
+        process_due_reminders()
         return
 
     new_emails = [
@@ -53,6 +57,7 @@ def process_inbox():
 
     if not new_emails:
         print("No new unread emails to process.")
+        process_due_reminders()
         return
 
     classified_emails = []
@@ -113,6 +118,8 @@ def process_inbox():
         save_processed_email(email)
 
         print("-" * 80)
+    
+    process_due_reminders()
 
 
 def run_scheduler():
@@ -133,6 +140,24 @@ def run_scheduler():
 
     process_inbox()
     scheduler.start()
+
+def process_due_reminders():
+    init_db()
+
+    due_reminders = get_due_reminders()
+
+    if not due_reminders:
+        print("No due reminders.")
+        return
+
+    print(f"Found {len(due_reminders)} due reminder(s).")
+
+    for reminder in due_reminders:
+        notify_reminder(reminder)
+
+        print(f"Reminder sent: {reminder['subject']}")
+
+        mark_reminder_sent(reminder["id"])
 
 def main():
     config = load_config()
