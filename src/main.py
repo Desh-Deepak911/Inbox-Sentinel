@@ -1,10 +1,12 @@
-from ai_classifier import classify_email_with_ai
+from apscheduler.schedulers.blocking import BlockingScheduler
+
 from config import load_config
 from db import init_db, is_email_processed, save_processed_email
+from digest import generate_digest
 from gmail_client import fetch_unread_emails
 from notifier import notify_email
 from rules import classify_email
-from digest import generate_digest
+from ai_classifier import classify_email_with_ai
 
 
 PRIORITY_ORDER = {
@@ -23,7 +25,7 @@ def should_use_ai(email, config):
     return PRIORITY_ORDER[email["priority"]] >= PRIORITY_ORDER[minimum_priority]
 
 
-def main():
+def process_inbox():
     config = load_config()
 
     max_results = config["gmail"]["max_results"]
@@ -56,11 +58,13 @@ def main():
         if should_use_ai(rule_result, config):
             ai_result = classify_email_with_ai(rule_result, model=ai_model)
 
-            rule_result["ai_priority"] = ai_result.get("priority", rule_result["priority"])
+            rule_result["ai_priority"] = ai_result.get(
+                "priority",
+                rule_result["priority"],
+            )
             rule_result["ai_reason"] = ai_result.get("reason", "")
             rule_result["suggested_action"] = ai_result.get("suggested_action", "")
             rule_result["confidence"] = ai_result.get("confidence", 0.0)
-
             rule_result["priority"] = rule_result["ai_priority"]
 
         classified_emails.append(rule_result)
@@ -95,6 +99,37 @@ def main():
         save_processed_email(email)
 
         print("-" * 80)
+
+
+def run_scheduler():
+    config = load_config()
+    interval_minutes = config["scheduler"]["interval_minutes"]
+
+    scheduler = BlockingScheduler()
+
+    scheduler.add_job(
+        process_inbox,
+        "interval",
+        minutes=interval_minutes,
+        next_run_time=None,
+    )
+
+    print(f"Inbox Sentinel is running every {interval_minutes} minutes.")
+    print("Press Ctrl+C to stop.")
+
+    process_inbox()
+    scheduler.start()
+
+
+def main():
+    config = load_config()
+
+    if config["scheduler"]["enabled"]:
+        run_scheduler()
+    else:
+        process_inbox()
+        print()
+        print(generate_digest())
 
 
 if __name__ == "__main__":
