@@ -4,6 +4,7 @@ from db import init_db, is_email_processed, save_processed_email
 from gmail_client import fetch_unread_emails
 from notifier import notify_email
 from rules import classify_email
+from digest import generate_digest
 
 
 PRIORITY_ORDER = {
