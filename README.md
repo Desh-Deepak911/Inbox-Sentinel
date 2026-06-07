@@ -1,144 +1,319 @@
 # Inbox Sentinel
 
-**Inbox Sentinel** is a local-first AI email assistant that helps users identify important emails, prioritize their inbox, and receive actionable insights without surrendering control of their data.
+Inbox Sentinel is an open-source, local-first AI email assistant that helps users identify important emails, remember pending actions, generate reminders, and provide actionable insights from their inbox.
 
-The project is being built incrementally to demonstrate how modern AI agents can be designed using real-world software engineering principles such as authentication, state management, rule engines, memory, notifications, and AI-powered reasoning.
+The goal is not to build another inbox client, but to build an intelligent email assistant that helps users decide:
+
+- What needs my attention?
+- What should I do next?
+- What can wait?
+- What have I forgotten to follow up on?
 
 ## Vision
 
-Most people don't need another inbox.
+Inbox Sentinel aims to become a personal email chief of staff that:
 
-They need a system that answers:
+- Watches incoming emails
+- Prioritizes important conversations
+- Remembers pending actions
+- Reminds users when action is needed
+- Drafts intelligent responses
+- Maintains user control and privacy
 
-- Which emails require my attention?
-- What should I respond to first?
-- What can safely wait?
-- What actions are required from me?
+All processing is performed locally, with user-controlled AI integrations.
 
-Inbox Sentinel aims to become a personal email chief of staff that runs locally and helps users focus on what matters.
+---
 
-## Current Features
+# Current Features
 
-### Gmail Authentication
+## Gmail Authentication
 
-- OAuth 2.0 integration with Gmail API
-- Secure token-based authentication
-- Read-only Gmail access
+- OAuth 2.0 Gmail authentication
+- Secure token-based access
+- Gmail API integration
 
-### Email Retrieval
+## Email Retrieval
 
-- Fetch unread inbox emails
+- Fetch unread emails
+- Extract metadata
 - Extract sender information
-- Extract email subject
-- Extract email snippet
-- Extract email metadata
+- Extract subjects and snippets
 
-### Rule-Based Priority Engine
+## Rule-Based Classification
 
-- Keyword-based urgency detection
-- Sender importance scoring
-- Priority classification:
+- Keyword scoring
+- Important sender detection
+- Explainable classifications
+- Priority levels:
   - HIGH
   - MEDIUM
   - LOW
-- Explainable reasoning for every classification
 
-### Local Memory
+## AI Classification
 
-- SQLite-based persistence
-- Stores processed email information
-- Prevents duplicate processing
-- Maintains state across executions
+Powered by Gemini.
 
-## Architecture
+Provides:
+
+- Priority assessment
+- Reasoning
+- Suggested actions
+- Confidence scoring
+
+Example:
+
+```json
+{
+  "priority": "HIGH",
+  "reason": "Recruiter is requesting interview availability.",
+  "suggested_action": "Reply with available interview slots.",
+  "confidence": 0.92
+}
+```
+
+## Local Memory
+
+SQLite persistence for:
+
+- Processed emails
+- AI insights
+- Suggested actions
+- Confidence scores
+
+## Daily Digest
+
+Generate summaries of:
+
+- High-priority emails
+- Medium-priority emails
+- Recommended actions
+
+## Notifications
+
+Desktop notifications for priority emails.
+
+## Scheduled Monitoring
+
+Inbox Sentinel can:
+
+- Monitor Gmail periodically
+- Classify emails automatically
+- Update memory continuously
+
+## Reminder Agent
+
+ReminderAgent determines:
+
+- Whether an email requires a reminder
+- When reminders should occur
+- Reminder priority
+
+## Reminder Persistence
+
+Reminders are stored in SQLite and survive restarts.
+
+## Due Reminder Processing
+
+Inbox Sentinel can:
+
+- Find due reminders
+- Send reminder notifications
+- Mark reminders as completed
+
+---
+
+# Architecture
 
 ```text
 Gmail API
     ↓
-OAuth Authentication
+Email Fetcher
     ↓
-Email Retrieval
+Rule Classifier
     ↓
-Rule Engine
+AI Classifier (Gemini)
     ↓
-SQLite Memory
+Memory Store (SQLite)
     ↓
-User Output
+Reminder Agent
+    ↓
+Reminder Store
+    ↓
+Notification Adapter
 ```
 
-## Tech Stack
+## Scheduled Agent Loop
+
+```text
+Observe Inbox
+    ↓
+Classify
+    ↓
+Generate AI Insights
+    ↓
+Store Email Memory
+    ↓
+Create Reminder
+    ↓
+Store Reminder
+    ↓
+Send Notifications
+    ↓
+Check Due Reminders
+    ↓
+Repeat
+```
+
+---
+
+# Project Structure
+
+```text
+src/
+└── inbox_sentinel/
+    ├── __init__.py
+    ├── main.py
+    │
+    ├── ai/
+    │   └── email_classifier.py
+    │
+    ├── classifiers/
+    │   └── rule_classifier.py
+    │
+    ├── config/
+    │   └── loader.py
+    │
+    ├── digest/
+    │   └── generator.py
+    │
+    ├── gmail/
+    │   └── client.py
+    │
+    ├── memory/
+    │   └── sqlite_store.py
+    │
+    ├── notifications/
+    │   └── notifier.py
+    │
+    └── reminders/
+        └── reminder_agent.py
+```
+
+---
+
+# Technology Stack
 
 - Python
 - Gmail API
 - OAuth 2.0
 - SQLite
-- Google API Client Library
+- APScheduler
+- Gemini API
+- PyYAML
 
-## Project Structure
+---
 
-```text
-inbox-sentinel/
-├── src/
-│   ├── main.py
-│   ├── gmail_client.py
-│   ├── rules.py
-│   └── db.py
-│
-├── tests/
-├── docs/
-│
-├── requirements.txt
-├── README.md
-├── .gitignore
-└── .env.example
-```
+# Current Roadmap
 
-## Roadmap
+## Completed
 
-### Phase 1
 - [x] Gmail OAuth Authentication
-- [x] Read Unread Emails
-
-### Phase 2
-- [x] Rule-Based Priority Scoring
+- [x] Email Retrieval
+- [x] Rule-Based Classification
+- [x] Gemini AI Classification
 - [x] SQLite Memory Layer
+- [x] Daily Digest Generation
+- [x] Desktop Notifications
+- [x] Scheduled Inbox Monitoring
+- [x] Project Structure Refactor
+- [x] ReminderAgent
+- [x] Reminder Persistence
+- [x] Due Reminder Processing
 
-### Phase 3
-- [ ] Desktop Notifications
-- [ ] Priority-Based Alerts
+---
 
-### Phase 4
-- [ ] AI Email Classification
-- [ ] Action Extraction
-- [ ] Deadline Detection
+## In Progress
 
-### Phase 5
-- [ ] Daily Inbox Digest
-- [ ] Reminder Scheduling
-- [ ] Follow-Up Detection
+- [ ] Improve Notification Adapters
 
-### Phase 6
-- [ ] Plugin Architecture
-- [ ] Custom User Rules
-- [ ] Multi-Provider Email Support
+---
 
-## Security
+## Upcoming
 
-Inbox Sentinel is designed with a privacy-first philosophy.
+### Memory Management
+
+- [ ] Database cleanup policies
+- [ ] Retention rules by priority
+- [ ] Reminder lifecycle management
+
+### Email Actions
+
+- [ ] Reply Draft Agent
+- [ ] Reply intent detection
+- [ ] AI-generated response drafts
+- [ ] Gmail draft creation
+- [ ] User approval workflow
+- [ ] Draft history
+
+### User Experience
+
+- [ ] CLI commands
+- [ ] Reminder management commands
+- [ ] Digest generation commands
+- [ ] Interactive review workflow
+
+### Reliability
+
+- [ ] Unit tests
+- [ ] Integration tests
+- [ ] End-to-end workflow tests
+- [ ] CI/CD pipeline
+
+### Documentation
+
+- [ ] Architecture diagrams
+- [ ] Development guide
+- [ ] Contribution guide
+- [ ] Deployment guide
+
+---
+
+# Long-Term Vision
+
+Inbox Sentinel is evolving from an email classifier into an intelligent email assistant.
+
+Future capabilities include:
+
+- Intelligent reminders
+- Follow-up tracking
+- AI-generated drafts
+- Email action recommendations
+- Multi-channel notifications
+- Multi-provider email support
+- Personal workflow automation
+
+The long-term objective is to create an open-source, privacy-first email assistant that helps users stay on top of important communications without surrendering control of their inbox.
+
+---
+
+# Security
 
 Never commit:
 
 - credentials.json
 - token.json
-- .env files
+- .env
+- SQLite databases
 
-All Gmail credentials remain local to the user's machine.
+All credentials remain local to the user's machine.
 
-## Why This Project Exists
+---
 
-This project serves two purposes:
+# Philosophy
 
-1. Build a genuinely useful personal productivity tool.
-2. Learn and demonstrate how production-grade AI agents are architected beyond simple LLM prompts.
+Inbox Sentinel follows a simple principle:
 
-The goal is to show how authentication, memory, reasoning, persistence, and action systems come together to form intelligent software.
+> AI may recommend.
+> AI may draft.
+> AI may remind.
+> The user remains in control.
