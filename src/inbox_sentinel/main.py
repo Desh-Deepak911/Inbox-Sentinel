@@ -21,6 +21,7 @@ from inbox_sentinel.memory.sqlite_store import (
 
 from inbox_sentinel.notifications.notifier import notify_email, notify_reminder
 from inbox_sentinel.reminders.reminder_agent import create_reminder
+from inbox_sentinel.memory.cleanup import run_cleanup
 
 PRIORITY_ORDER = {
     "LOW": 1,
@@ -133,6 +134,7 @@ def process_inbox():
         print("-" * 80)
     
     process_due_reminders()
+    run_cleanup()
 
 
 def run_scheduler():
