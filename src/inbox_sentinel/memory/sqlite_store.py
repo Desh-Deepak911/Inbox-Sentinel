@@ -29,6 +29,25 @@ def init_db():
             """
         )
 
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS reminders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email_id TEXT NOT NULL,
+                thread_id TEXT,
+                subject TEXT,
+                sender TEXT,
+                priority TEXT,
+                suggested_action TEXT,
+                reason TEXT,
+                remind_at TEXT NOT NULL,
+                status TEXT DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                sent_at TIMESTAMP
+            )
+            """
+        )
+
         existing_columns = {
             row[1]
             for row in conn.execute("PRAGMA table_info(processed_emails)")
@@ -109,3 +128,48 @@ def save_processed_email(email):
                 email.get("confidence"),
             ),
         )
+
+def save_reminder(reminder):
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO reminders (
+                email_id,
+                thread_id,
+                subject,
+                sender,
+                priority,
+                suggested_action,
+                reason,
+                remind_at,
+                status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                reminder["email_id"],
+                reminder["thread_id"],
+                reminder["subject"],
+                reminder["sender"],
+                reminder["priority"],
+                reminder["suggested_action"],
+                reminder["reason"],
+                reminder["remind_at"],
+                reminder["status"],
+            ),
+        )
+
+
+def reminder_exists_for_email(email_id):
+    with get_connection() as conn:
+        result = conn.execute(
+            """
+            SELECT 1
+            FROM reminders
+            WHERE email_id = ?
+            LIMIT 1
+            """,
+            (email_id,),
+        ).fetchone()
+
+    return result is not None
