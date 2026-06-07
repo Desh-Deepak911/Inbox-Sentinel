@@ -1,12 +1,21 @@
-from gmail_client import get_gmail_service
+from gmail_client import fetch_unread_emails
 
 
 def main():
-    service = get_gmail_service()
-    profile = service.users().getProfile(userId="me").execute()
+    emails = fetch_unread_emails(max_results=10)
 
-    print("Inbox Sentinel connected successfully.")
-    print(f"Email: {profile.get('emailAddress')}")
+    if not emails:
+        print("No unread emails found.")
+        return
+
+    print(f"Found {len(emails)} unread email(s):\n")
+
+    for index, email in enumerate(emails, start=1):
+        print(f"{index}. {email['subject']}")
+        print(f"   From: {email['from']}")
+        print(f"   Date: {email['date']}")
+        print(f"   Snippet: {email['snippet']}")
+        print("-" * 80)
 
 
 if __name__ == "__main__":
