@@ -1,30 +1,29 @@
-from pync import Notifier
+from inbox_sentinel.notifications.console import ConsoleNotificationAdapter
+from inbox_sentinel.notifications.mac import MacNotificationAdapter
 
 
-def notify_email(email):
+def get_notification_adapter(channel="mac"):
+    if channel == "console":
+        return ConsoleNotificationAdapter()
+
+    return MacNotificationAdapter()
+
+
+def notify_email(email, channel="mac"):
+    adapter = get_notification_adapter(channel)
+
     title = f"Inbox Sentinel: {email['priority']} priority"
-
     message = email.get("subject") or "New important email"
+    subtitle = email.get("from", "Unknown sender")
 
-    sender = email.get("from", "Unknown sender")
+    adapter.send(title, message, subtitle)
 
-    Notifier.notify(
-        message,
-        title=title,
-        subtitle=sender,
-        sound="default",
-    )
 
-def notify_reminder(reminder):
+def notify_reminder(reminder, channel="mac"):
+    adapter = get_notification_adapter(channel)
+
     title = f"Inbox Sentinel Reminder: {reminder['priority']}"
-
     message = reminder.get("suggested_action") or reminder.get("subject")
+    subtitle = reminder.get("sender", "Unknown sender")
 
-    sender = reminder.get("sender", "Unknown sender")
-
-    Notifier.notify(
-        message,
-        title=title,
-        subtitle=sender,
-        sound="default",
-    )
+    adapter.send(title, message, subtitle)

@@ -28,7 +28,6 @@ PRIORITY_ORDER = {
     "HIGH": 3,
 }
 
-
 def should_use_ai(email, config):
     if not config["ai"]["enabled"]:
         return False
@@ -43,6 +42,7 @@ def process_inbox():
     max_results = config["gmail"]["max_results"]
     notifications_enabled = config["notifications"]["enabled"]
     notifiable_priorities = set(config["notifications"]["priorities"])
+    notification_channel = config["notifications"].get("channel", "mac")
     ai_model = config["ai"]["model"]
 
     init_db()
@@ -108,7 +108,7 @@ def process_inbox():
             print(f"   Confidence: {email['confidence']}")
 
         if notifications_enabled and email["priority"] in notifiable_priorities:
-            notify_email(email)
+            notify_email(email, channel=config["notifications"]["channel"])
 
         reminder = create_reminder(email)
 
@@ -155,6 +155,10 @@ def run_scheduler():
     scheduler.start()
 
 def process_due_reminders():
+
+    config = load_config()
+    notification_channel = config["notifications"].get("channel", "mac")
+
     init_db()
 
     due_reminders = get_due_reminders()
@@ -166,7 +170,7 @@ def process_due_reminders():
     print(f"Found {len(due_reminders)} due reminder(s).")
 
     for reminder in due_reminders:
-        notify_reminder(reminder)
+        notify_reminder(reminder, channel=notification_channel)
 
         print(f"Reminder sent: {reminder['subject']}")
 
