@@ -11,6 +11,7 @@ from inbox_sentinel.memory.sqlite_store import (
     save_processed_email,
 )
 from inbox_sentinel.notifications.notifier import notify_email
+from inbox_sentinel.reminders.reminder_agent import create_reminder
 
 PRIORITY_ORDER = {
     "LOW": 1,
@@ -97,6 +98,13 @@ def process_inbox():
 
         if notifications_enabled and email["priority"] in notifiable_priorities:
             notify_email(email)
+
+        reminder = create_reminder(email)
+
+        if reminder:
+            print("   Reminder:")
+            print(f"   - Remind At: {reminder['remind_at']}")
+            print(f"   - Status: {reminder['status']}")
 
         save_processed_email(email)
 
