@@ -5,8 +5,14 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+import base64
+from email.message import EmailMessage
 
-SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
+
+SCOPES = [
+    "https://www.googleapis.com/auth/gmail.readonly",
+    "https://www.googleapis.com/auth/gmail.compose",
+]
 
 BASE_DIR = Path(__file__).resolve().parents[3]
 CREDENTIALS_PATH = BASE_DIR / "credentials.json"
@@ -85,3 +91,36 @@ def fetch_unread_emails(max_results=10):
         )
 
     return emails
+
+def create_gmail_draft(to, subject, body, thread_id=None):
+    service = get_gmail_service()
+
+    message = EmailMessage()
+    message.set_content(body)
+    message["To"] = to
+    message["Subject"] = subject
+
+    encoded_message = base64.urlsafe_b64encode(
+        message.as_bytes()
+    ).decode()
+
+    draft_body = {
+        "message": {
+            "raw": encoded_message,
+        }
+    }
+
+    if thread_id:
+        draft_body["message"]["threadId"] = thread_id
+
+    draft = (
+        service.users()
+        .drafts()
+        .create(
+            userId="me",
+            body=draft_body,
+        )
+        .execute()
+    )
+
+    return draft
